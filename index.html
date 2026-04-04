@@ -320,6 +320,21 @@
     <div class="wrap">
       <h1>Descent into Mechanics</h1>
       <p class="subtitle">Formative website for 11 guided mechanics questions. First, students answer the quiz. Then the site opens one of two learning paths depending on the score.</p>
+
+   <header>
+  <div class="wrap">
+    <h1>Descent into Mechanics</h1>
+    <p class="subtitle">...</p>
+
+    <!-- ✅ ADD THIS BLOCK HERE -->
+    <div style="margin-top:12px;">
+      <select id="langSwitch" class="secondary">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+
+
       <div class="hero-grid">
         <section class="panel">
           <h2>Two learning paths</h2>
@@ -497,10 +512,20 @@
       </p>
 
       <div class="formula-box">
-        <a href="mechanics_dark_beamer.pdf" target="_blank" class="primary">
-          OPEN BEAMER PDF
-        </a>
-      </div>
+      
+     <p>Select language for the Beamer:</p>
+
+<div id="pdfLinks">
+
+  <a id="pdfES" href="mechanics_dark_beamer.pdf" target="_blank" class="primary">
+    📄 Español
+  </a>
+
+  <a id="pdfEN" href="mechanics_dark_beamer_en.pdf" target="_blank" class="primary">
+    📄 English
+  </a>
+
+</div>
 
     </div>
   </div>
@@ -520,14 +545,90 @@
   </section>
 
   <section class="wrap result panel" id="stage3ResultBox">
-    <h2>Stage III Result</h2>
+    
+<section class="wrap panel" id="youtubeUnlock" style="display:none;">
+  <h2>Final Reward</h2>
+
+  <p>Enter password to unlock learning videos:</p>
+
+  <button class="primary" onclick="unlockYouTube()">Unlock</button>
+
+  <div id="videoLinks" style="display:none; margin-top:15px;">
+    <p>Select what you want to watch:</p>
+
+    <div id="videoLinks">
+
+  <a id="videoEN" href="https://www.youtube.com/watch?v=VIDEO_ENGLISH" target="_blank">
+    ▶ English Video
+  </a>
+
+  <a id="videoES" href="https://www.youtube.com/watch?v=VIDEO_SPANISH" target="_blank">
+    ▶ Video en Español
+  </a>
+
+</div>
+
+
+
+
+<h2>Stage III Result</h2>
     <div class="score" id="stage3ScoreText">0 / 11</div>
     <div class="status-line" id="stage3StatusLine"></div>
     <div class="answer-review" id="stage3AnswerReview"></div>
   </section>
 
+<section class="wrap panel">
+  <h2>Student Experience</h2>
+
+  <textarea id="commentBox" placeholder="Write your experience..." style="width:100%;height:100px;"></textarea>
+  <button class="primary" onclick="saveComment()">Save</button>
+
+  <div id="commentsList" style="margin-top:15px;"></div>
+
+  <button class="secondary" onclick="clearComments()">Delete Comments</button>
+</section>
+
+
   <footer>
     Designed as a dark adaptive formative website: first the score, then the right explanatory depth, then a second stage leading to PDF access and later levels.
+
+<section class="wrap panel" id="proofUploadSection">
+  <h2>Proof Submission in LaTeX</h2>
+
+  <p>
+    Upload your <strong>.tex</strong> file containing proofs, derivations, and proposed solutions for the requested mechanics topics.
+  </p>
+
+  <div class="lesson-box">
+    <h3>Required contents</h3>
+    <ul class="list-tight">
+      <li>Maximum height</li>
+      <li>Range</li>
+      <li>Time to reach maximum height</li>
+      <li>Time to reach the range</li>
+      <li>One solved projectile-motion exercise</li>
+      <li>Distance for polynomials of degree 2, 3, and 4</li>
+      <li>One proposed exercise on polynomial motion</li>
+      <li>Kinematics in polar coordinates</li>
+      <li>Kinematics in cylindrical coordinates</li>
+      <li>Kinematics in spherical coordinates</li>
+      <li>One proposed exercise on coordinate kinematics</li>
+    </ul>
+  </div>
+
+  <div class="lesson-box">
+    <label for="texUpload"><strong>Upload LaTeX file:</strong></label><br><br>
+    <input type="file" id="texUpload" accept=".tex" class="secondary" />
+    <button class="primary" id="reviewTexBtn" style="margin-left:10px;">Review file</button>
+  </div>
+
+  <div class="lesson-box">
+    <h3>Review result</h3>
+    <div id="texReviewStatus" class="small">No file reviewed yet.</div>
+    <div id="texReviewDetails" class="tests">Waiting for upload.</div>
+  </div>
+</section>
+
   </footer>
 
   <script>
@@ -793,11 +894,18 @@
         showElement(pdfRewardSection);
         showElement(stage3Section);
       } else {
-        stage2StatusLine.textContent = 'Stage II reviewed. PDF reward stays locked until all 11 are correct.';
-        hideElement(pdfRewardSection);
-        hideElement(stage3Section);
-        hideElement(stage3ResultBox);
-      }
+  alert("You must obtain 11/11. Restarting Stage II.");
+
+  resetRadioGroupStartsWith('s2q');   // 🔁 resets answers
+  hideElement(stage2ResultBox);
+  hideElement(pdfRewardSection);
+  hideElement(stage3Section);
+  hideElement(stage3ResultBox);
+
+  stage2AnswerReview.innerHTML = '';  // 🧹 clears feedback
+
+  return; // 🚫 stops execution
+}
 
       stage2ResultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -930,6 +1038,135 @@
 
     document.body.appendChild(scorePanel);
     renderScores();
+
+ const LANG = {
+    en: {
+      reset: "Reset",
+      submit: "Reveal score and route"
+    },
+    es: {
+      reset: "Reiniciar",
+      submit: "Mostrar puntaje y ruta"
+    }
+  };
+
+document.getElementById('langSwitch').addEventListener('change', (e) => {
+  currentLang = e.target.value;
+
+  renderQuestionSet(quizContainer, questions, 'q', 'Question');
+  renderQuestionSet(stage2Quiz, stage2Questions, 's2q', 'Stage II — Question');
+  renderQuestionSet(stage3Quiz, stage3Questions, 's3q', 'Stage III — Question');
+
+  updatePDFLanguage(); // 🔥 important
+});
+
+function protectPDF() {
+  const links = document.querySelectorAll('#pdfRewardSection a');
+
+  links.forEach(link => {
+    link.addEventListener('click', function (e) {
+      const pass = prompt("Enter password to open PDF:");
+
+      if (pass !== "3411") {
+        e.preventDefault();
+        alert("Incorrect password");
+      }
+    });
+  });
+}
+
+
+  setTimeout(protectPDF, 500);
+
+
+function saveComment() {
+  const text = document.getElementById('commentBox').value;
+  if (!text) return;
+
+  const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+  comments.push({
+    text,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem('comments', JSON.stringify(comments));
+  renderComments();
+}
+
+function renderComments() {
+  const container = document.getElementById('commentsList');
+  const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+  container.innerHTML = '';
+
+  comments.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    div.innerHTML = `<p>${c.text}</p><span class="small">${c.date}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function clearComments() {
+  const pass = prompt("Enter password:");
+  if (pass === '1234') {
+    localStorage.removeItem('comments');
+    renderComments();
+  } else {
+    alert("Wrong password");
+  }
+}
+
+renderComments();
+
+
+function unlockYouTube() {
+  const pass = prompt("Enter password:");
+
+  if (pass === "3411") {
+    document.getElementById("videoLinks").style.display = "block";
+  } else {
+    alert("Incorrect password");
+  }
+}
+
+
+submitStage3Btn.addEventListener('click', ()=>{
+  setTimeout(()=>{
+    if(stage3ScoreText.textContent.startsWith("11")){
+      document.getElementById('youtubeUnlock').style.display = "block";
+    }
+  },100);
+});
+
+function updatePDFLanguage() {
+  const es = document.getElementById("pdfES");
+  const en = document.getElementById("pdfEN");
+
+  if (currentLang === "es") {
+    es.style.display = "inline-block";
+    en.style.display = "none";
+  } else {
+    es.style.display = "none";
+    en.style.display = "inline-block";
+  }
+}
+
+function updateVideoLanguage() {
+  const es = document.getElementById("videoES");
+  const en = document.getElementById("videoEN");
+
+  if (currentLang === "es") {
+    es.style.display = "inline-block";
+    en.style.display = "none";
+  } else {
+    es.style.display = "none";
+    en.style.display = "inline-block";
+  }
+}
+
+updatePDFLanguage();
+updateVideoLanguage();
+
   </script>
 </body>
 </html>
