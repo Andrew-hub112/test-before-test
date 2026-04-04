@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> Mechanics</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(17, 17, 17, 0.88);
+      --panel-2: rgba(28, 28, 28, 0.92);
+      --text: #d3d3d3;
+      --muted: #9b9b9b;
+      --blood: #b30000;
+      --blood-2: #700000;
+      --line: rgba(179, 0, 0, 0.35);
+      --shadow: 0 0 24px rgba(179, 0, 0, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(130,0,0,0.18), transparent 22%),
+        radial-gradient(circle at 80% 30%, rgba(130,0,0,0.12), transparent 28%),
+        linear-gradient(180deg, #020202 0%, #090909 48%, #020202 100%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    .noise::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.06;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 3px 3px, 4px 4px;
+      mix-blend-mode: screen;
+    }
+
+    header {
+      padding: 36px 20px 26px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(14,14,14,0.78));
+      box-shadow: var(--shadow);
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 18px 32px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      color: #e6e6e6;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(179,0,0,0.35), 0 0 22px rgba(179,0,0,0.18);
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 1.04rem;
+      max-width: 900px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(2px);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .formula-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-left: 3px solid var(--blood);
+      background: rgba(255,255,255,0.02);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+
+    main {
+      padding-top: 22px;
+    }
+
+    .question-card {
+      margin-bottom: 18px;
+      background: var(--panel-2);
+      border: 1px solid rgba(179, 0, 0, 0.22);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .q-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .q-num {
+      color: #f0f0f0;
+      font-size: 1.18rem;
+      text-transform: uppercase;
+    }
+
+    .q-tag {
+      color: #f5baba;
+      font-size: 0.88rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(179,0,0,0.12);
+    }
+
+    .statement {
+      color: #dddddd;
+      margin-bottom: 14px;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    label.option {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    label.option:hover {
+      border-color: rgba(179,0,0,0.55);
+      background: rgba(179,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    input[type="radio"] {
+      margin-right: 10px;
+      accent-color: var(--blood);
+    }
+
+    .controls {
+      position: sticky;
+      bottom: 0;
+      margin-top: 22px;
+      background: rgba(0,0,0,0.86);
+      border-top: 1px solid var(--line);
+      padding: 16px 0 8px;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .primary {
+      background: linear-gradient(180deg, #b30000, #760000);
+      color: white;
+      box-shadow: 0 0 18px rgba(179,0,0,0.22);
+    }
+
+    .primary:hover { transform: translateY(-1px); }
+
+    .secondary {
+      background: #1a1a1a;
+      color: #efefef;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .result, .pathway {
+      display: none;
+      margin-top: 22px;
+    }
+
+    .score {
+      font-size: 2rem;
+      color: white;
+      margin-top: 6px;
+    }
+
+    .status-line {
+      color: #f3c5c5;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    .list-tight { margin: 8px 0 0; padding-left: 20px; }
+    .list-tight li { margin: 4px 0; }
+
+    .answer-review {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .review-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .good { border-left: 4px solid #bcbcbc; }
+    .bad { border-left: 4px solid var(--blood); }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.84rem;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .pill-ok {
+      background: rgba(230,230,230,0.1);
+      color: #efefef;
+    }
+
+    .pill-bad {
+      background: rgba(179,0,0,0.18);
+      color: #ffd4d4;
+    }
+
+    .pathway-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .lesson-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .lesson-box h3 { color: #fff; margin-bottom: 8px; }
+    .lesson-box p { margin: 8px 0; }
+    .lesson-box code, .mono {
+      font-family: "Courier New", monospace;
+      color: #f2d6d6;
+    }
+
+    .warning {
+      color: #f1c4c4;
+      margin-top: 10px;
+    }
+
+    .tests {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ddd;
+      white-space: pre-wrap;
+      font-family: "Courier New", monospace;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 28px 0 10px;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid, .pathway-grid { grid-template-columns: 1fr; }
+      .wrap { padding: 0 12px 30px; }
+      .question-card { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <header>
+    <div class="wrap">
+      <h1>Descent into Mechanics</h1>
+      <p class="subtitle">Formative website for 11 guided mechanics questions. First, students answer the quiz. Then the site opens one of two learning paths depending on the score.</p>
+      <div class="hero-grid">
+        <section class="panel">
+          <h2>Two learning paths</h2>
+          <ul class="list-tight">
+            <li><strong>Score 0 to 10:</strong> opens a slower, easier explanation path with very simple calculus language.</li>
+            <li><strong>Score 11:</strong> unlocks a formal path with more rigorous mechanics and calculus detail.</li>
+          </ul>
+          <div class="formula-box">
+            The idea is not only to grade. It is to <strong>route students toward the kind of explanation they need</strong>.
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Topics covered</h2>
+          <ul class="list-tight">
+            <li>Rectilinear motion with variable acceleration</li>
+            <li>Projectile motion</li>
+            <li>Polar coordinates</li>
+            <li>Distance vs displacement</li>
+            <li>Velocity, acceleration, angular speed</li>
+          </ul>
+          <p class="warning">Current version grades only multiple choice automatically. After grading, the site explains the material according to the score.</p>
+          <div class="tests" id="testOutput">Self-checks not run yet.</div>
+        </section>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="quizContainer"></main>
+
+  <div class="controls">
+    <div class="wrap" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+      <div class="small">Answer all 11 questions, then reveal your learning path.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="secondary" id="resetBtn">Reset</button>
+        <button class="primary" id="submitBtn">Reveal score and route</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="wrap result panel" id="resultBox">
+    <h2>Result</h2>
+    <div class="score" id="scoreText">0 / 11</div>
+    <div class="status-line" id="statusLine"></div>
+    <div class="answer-review" id="answerReview"></div>
+  </section>
+
+  <section class="wrap pathway" id="easyPath">
+    <div class="panel">
+      <h2>Path A — Slower explanation</h2>
+      <p>This route assumes the student sees many formulas as disconnected symbols and controls only a small part of differentiation. The goal is to explain each core idea in the simplest possible way, with direct steps.</p>
+      <div class="lesson-box">
+        <h3>1. Position, velocity, acceleration</h3>
+        <p><strong>What is position?</strong> It tells you where the object is.</p>
+        <p><span class="mono">x(t)</span> means position as time changes.</p>
+        <p><strong>What is velocity?</strong> It tells you how fast position changes.</p>
+        <p class="mono">v(t) = dx/dt</p>
+        <p>Simple meaning: if position goes up quickly, velocity is positive and large. If position goes down, velocity is negative.</p>
+        <p><strong>What is acceleration?</strong> It tells you how velocity changes.</p>
+        <p class="mono">a(t) = dv/dt</p>
+      </div>
+      <div class="lesson-box">
+        <h3>2. How to detect change of direction</h3>
+        <p>Do not look first at position. Look at <strong>velocity</strong>.</p>
+        <ol class="list-tight">
+          <li>Differentiate position to get velocity.</li>
+          <li>Solve <span class="mono">v(t)=0</span>.</li>
+          <li>Check the sign before and after that instant.</li>
+        </ol>
+        <p>If velocity changes from negative to positive, or from positive to negative, the object changes direction.</p>
+      </div>
+      <div class="lesson-box">
+        <h3>3. Distance vs displacement</h3>
+        <p><strong>Displacement</strong> keeps direction. It can be negative.</p>
+        <p class="mono">Δx = x_f - x_i</p>
+        <p><strong>Distance</strong> counts total ground covered. It is always positive.</p>
+        <p class="mono">distance = |Δx_1| + |Δx_2| + ...</p>
+      </div>
+      <div class="lesson-box">
+        <h3>4. Polar coordinates in the most basic way</h3>
+        <p>In Cartesian coordinates, you say left-right and up-down. In polar coordinates, you say:</p>
+        <ul class="list-tight">
+          <li><span class="mono">r</span>: how far from the origin</li>
+          <li><span class="mono">θ</span>: the angle</li>
+        </ul>
+        <p>The radial velocity is just how fast the distance from the origin changes.</p>
+        <p class="mono">v_r = dr/dt</p>
+        <p>The angular velocity is how fast the angle changes.</p>
+        <p class="mono">ω = dθ/dt</p>
+      </div>
+      <div class="lesson-box">
+        <h3>5. Projectile motion in simple words</h3>
+        <p>A projectile has two motions at the same time:</p>
+        <ul class="list-tight">
+          <li>Horizontal motion</li>
+          <li>Vertical motion</li>
+        </ul>
+        <p>Gravity changes the vertical motion.</p>
+        <p class="mono">v_y(t)=v_{0y}-gt</p>
+        <p>The total speed at the end is found with Pythagoras:</p>
+        <p class="mono">|v| = √(v_x² + v_y²)</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap pathway" id="formalPath">
+    <div class="panel">
+      <h2>Path B — Formal mechanics route</h2>
+      <p>This route is unlocked only by a perfect score. It assumes a student can read formulas fluently and is expected to engage with derivation, sign analysis, and vector kinematics more rigorously.</p>
+      <div class="pathway-grid">
+        <div class="lesson-box">
+          <h3>1. Rectilinear motion with variable acceleration</h3>
+          <p>For a cubic position law <span class="mono">x(t)=t^3-4t^2+2</span>, one obtains</p>
+          <p class="mono">v(t)=3t^2-8t, a(t)=6t-8.</p>
+          <p>This is not uniformly accelerated motion. The qualitative structure comes from the roots of velocity and the affine variation of acceleration.</p>
+          <p>The change of direction is not inferred from acceleration alone. It is determined by sign reversal of <span class="mono">v(t)</span>.</p>
+        </div>
+        <div class="lesson-box">
+          <h3>2. Displacement and total distance</h3>
+          <p>Given critical instants from the zeros of velocity, partition the time interval accordingly.</p>
+          <p class="mono">Δx_i = x(t_{i+1}) - x(t_i)</p>
+          <p>whereas total distance is</p>
+          <p class="mono">D = Σ |Δx_i|</p>
+        </div>
+        <div class="lesson-box">
+          <h3>3. Polar basis and kinematics</h3>
+          <p>The orthonormal moving basis is</p>
+          <p class="mono">e_r=(cosθ, sinθ), e_θ=(-sinθ, cosθ)</p>
+          <p>Hence</p>
+          <p class="mono">r⃗ = r e_r, v⃗ = ṙ e_r + rθ̇ e_θ</p>
+          <p class="mono">a⃗ = (r¨ - rθ̇²)e_r + (rθ¨ + 2ṙθ̇)e_θ</p>
+        </div>
+        <div class="lesson-box">
+          <h3>4. Projectile motion as decoupled planar motion</h3>
+          <p class="mono">v_{0x}=v_0 cosθ, v_{0y}=v_0 sinθ</p>
+          <p>With upward vertical axis, a launch below the horizontal implies <span class="mono">v_{0y}&lt;0</span>.</p>
+          <p class="mono">v_y(t)=v_{0y}-gt</p>
+          <p class="mono">|v⃗| = √(v_x² + v_y²)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap pathway" id="stage2Section">
+    <div class="panel">
+      <h2>Stage II — Additional 11 exercises</h2>
+      <p>These exercises follow the same dark format and are related to the Beamer route already designed. This stage stays locked until the first 11 questions are evaluated. When this second set is solved perfectly, the PDF reward panel becomes available and the next level can be attached later.</p>
+      <div id="stage2Quiz"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button class="secondary" id="resetStage2Btn">Reset Stage II</button>
+        <button class="primary" id="submitStage2Btn">Evaluate Stage II</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap result panel" id="stage2ResultBox">
+    <h2>Stage II Result</h2>
+    <div class="score" id="stage2ScoreText">0 / 11</div>
+    <div class="status-line" id="stage2StatusLine"></div>
+    <div class="answer-review" id="stage2AnswerReview"></div>
+  </section>
+
+  <section class="wrap pathway" id="pdfRewardSection">
+    <div class="panel">
+      <h2>PDF Reward Panel</h2>
+      <p>The site is now prepared to reveal the Beamer in PDF format after Stage II is solved. This panel is a placeholder so the PDF link or embedded file can be connected later.</p>
+      <div class="lesson-box">
+        <h3>Beamer access</h3>
+        <p id="pdfRewardMessage">Stage II complete. Insert your PDF file or link here when ready.</p>
+        <div class="formula-box">
+          Example placeholder:<br>
+          <span class="mono">beamer/mechanics_dark_beamer.pdf</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap pathway" id="stage3Section">
+    <div class="panel">
+      <h2>Stage III — Conceptual descent</h2>
+      <p>This level opens only after a perfect result in Stage II. There are no hints here. The questions are more inferential, more structural, and more solitary. Feedback is delayed until the end.</p>
+      <div class="formula-box">No formulas are given. Only structure remains.</div>
+      <div id="stage3Quiz"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button class="secondary" id="resetStage3Btn">Reset Stage III</button>
+        <button class="primary" id="submitStage3Btn">Evaluate Stage III</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap result panel" id="stage3ResultBox">
+    <h2>Stage III Result</h2>
+    <div class="score" id="stage3ScoreText">0 / 11</div>
+    <div class="status-line" id="stage3StatusLine"></div>
+    <div class="answer-review" id="stage3AnswerReview"></div>
+  </section>
+
+  <footer>
+    Designed as a dark adaptive formative website: first the score, then the right explanatory depth, then a second stage leading to PDF access and later levels.
+  </footer>
+
+  <script>
+    const questions = [
+      {
+        tag: 'Rectilinear motion',
+        statement: 'If x(t) represents the position of an object on a straight line, what does differentiating x(t) give physically?',
+        options: ['Acceleration', 'Velocity', 'Distance', 'Nothing meaningful'],
+        answer: 1,
+        explanation: 'The derivative of position with respect to time is velocity: v(t)=dx/dt.'
+      },
+      {
+        tag: 'Direction change',
+        statement: 'How do you identify that an object changes direction in one-dimensional motion?',
+        options: ['When position becomes zero', 'When velocity changes sign', 'When acceleration is constant', 'When time is positive'],
+        answer: 1,
+        explanation: 'A change of direction is detected by a sign change in velocity.'
+      },
+      {
+        tag: 'Distance vs displacement',
+        statement: 'What is the main difference between displacement and total distance traveled?',
+        options: ['They are always equal', 'Displacement includes direction; distance does not', 'Distance can be negative', 'Displacement is always larger'],
+        answer: 1,
+        explanation: 'Displacement is signed; distance is the sum of magnitudes and stays positive.'
+      },
+      {
+        tag: 'Distance computation',
+        statement: 'To compute total distance in rectilinear motion with a change of direction, what should be added?',
+        options: ['Only the final position', 'The absolute value of each partial displacement', 'Only the final velocity', 'Only the positive positions'],
+        answer: 1,
+        explanation: 'Distance is obtained by summing the absolute value of each displacement segment.'
+      },
+      {
+        tag: 'Polar meaning',
+        statement: 'In polar coordinates, what does r(t) represent?',
+        options: ['Radial velocity', 'Distance to the origin', 'Angular acceleration', 'Horizontal velocity'],
+        answer: 1,
+        explanation: 'r(t) is the radial coordinate: distance from the origin.'
+      },
+      {
+        tag: 'Angular speed',
+        statement: 'Which expression represents angular velocity in polar coordinates?',
+        options: ['ṙ', 'rθ̇', 'θ̇', 'rθ'],
+        answer: 2,
+        explanation: 'Angular velocity is the time derivative of the angular variable: ω=θ̇.'
+      },
+      {
+        tag: 'Polar velocity components',
+        statement: 'The velocity of a particle in polar coordinates has which components?',
+        options: ['Only radial', 'Only tangential', 'Radial and tangential', 'Cartesian only'],
+        answer: 2,
+        explanation: 'In polar form, v⃗ = ṙ e_r + rθ̇ e_θ.'
+      },
+      {
+        tag: 'Speed unit',
+        statement: 'What unit must the total linear speed in polar coordinates have?',
+        options: ['rad/s', 'm/s', 'm', 's/m'],
+        answer: 1,
+        explanation: 'Speed is a linear quantity, so its unit is meters per second.'
+      },
+      {
+        tag: 'Projectile decomposition',
+        statement: 'For projectile motion, how is the initial velocity decomposed?',
+        options: ['v0x=v0sinθ and v0y=v0cosθ', 'v0x=v0cosθ and v0y=v0sinθ', 'v0x=v0tanθ and v0y=v0', 'It cannot be decomposed'],
+        answer: 1,
+        explanation: 'The standard decomposition is horizontal with cosine and vertical with sine.'
+      },
+      {
+        tag: 'Vertical velocity',
+        statement: 'In ideal projectile motion with upward positive axis, which formula gives the vertical velocity?',
+        options: ['vy=v0y+gt', 'vy=v0y-gt', 'vy=g/t', 'vy=vx-gt'],
+        answer: 1,
+        explanation: 'Gravity acts downward, so vy(t)=v0y-gt.'
+      },
+      {
+        tag: 'Final speed',
+        statement: 'How do you compute the magnitude of velocity from its horizontal and vertical components?',
+        options: ['vx+vy', 'vx-vy', '√(vx²+vy²)', 'vx·vy'],
+        answer: 2,
+        explanation: 'The total speed is the Euclidean norm of the velocity vector.'
+      }
+    ];
+
+    const stage2Questions = [
+      { tag: 'Cubic position law', statement: 'For x(t)=t^3-4t^2+2, which expression is the correct velocity?', options: ['3t^2-8t', 't^2-8t+2', '6t-8', '3t^2-4t'], answer: 0, explanation: 'Differentiate x(t): v(t)=3t^2-8t.' },
+      { tag: 'Variable acceleration', statement: 'For x(t)=t^3-4t^2+2, which expression is the correct acceleration?', options: ['3t^2-8t', '6t-8', 't^3-8', '6t'], answer: 1, explanation: 'Differentiate velocity: a(t)=6t-8.' },
+      { tag: 'Turning instant', statement: 'Inside 0<t≤3, at what time does the object change direction for v(t)=3t^2-8t?', options: ['t=0', 't=8/3', 't=3/8', 't=4'], answer: 1, explanation: 'The roots are t=0 and t=8/3; the turning instant inside the interval is t=8/3 s.' },
+      { tag: 'Polar radial speed', statement: 'If r(t)=2t^3+t^2, what is ṙ(t)?', options: ['6t^2+2t', '2t^3+2t', '6t+2', 't^2(2t+1)'], answer: 0, explanation: 'Differentiate r(t): ṙ(t)=6t^2+2t.' },
+      { tag: 'Polar angular speed', statement: 'If θ(t)=(t^2+2t)π, what is θ̇(t)?', options: ['(2t+2)π', '(t+2)π', '2π', '(2t^2+2)π'], answer: 0, explanation: 'Differentiate θ(t): θ̇(t)=(2t+2)π.' },
+      { tag: 'State at t=1', statement: 'For r(t)=2t^3+t^2, what is r(1)?', options: ['1 m', '2 m', '3 m', '4 m'], answer: 2, explanation: 'r(1)=2(1)^3+(1)^2=3 m.' },
+      { tag: 'Projectile component', statement: 'A projectile is launched 30° below the horizontal with v0=18 m/s. What is v0y if upward is positive?', options: ['+9 m/s', '-9 m/s', '9√3 m/s', '-9√3 m/s'], answer: 1, explanation: 'Below the horizontal means the vertical component is negative: v0y=-18 sin30°=-9 m/s.' },
+      { tag: 'Impact vertical speed', statement: 'With v0y=-9 m/s, g=10 m/s², and t=2.5 s, what is vy at impact?', options: ['-16 m/s', '-25 m/s', '-34 m/s', '34 m/s'], answer: 2, explanation: 'vy=-9-10(2.5)=-34 m/s.' },
+      { tag: 'Projectile speed magnitude', statement: 'If vx=9√3 m/s and vy=-34 m/s, which expression gives the final speed?', options: ['√(243+1156)', '243+1156', '9√3-34', '√(9√3-34)'], answer: 0, explanation: 'The speed is the norm: |v|=√(vx²+vy²)=√(243+1156).' },
+      { tag: 'Polar velocity structure', statement: 'Which expression is the correct polar velocity formula?', options: ['v⃗=ṙe_r+rθ̇e_θ', 'v⃗=r̈e_r+θ̈e_θ', 'v⃗=ṙe_θ+rθ̇e_r', 'v⃗=θ̇e_r+re_θ'], answer: 0, explanation: 'The correct polar velocity is v⃗=ṙe_r+rθ̇e_θ.' },
+      { tag: 'Distance formula', statement: 'Which expression best represents total distance on segmented rectilinear motion?', options: ['ΣΔx_i', 'Σ|Δx_i|', 'xf-xi', 'Σv_i'], answer: 1, explanation: 'Total distance adds magnitudes, not signed displacements.' }
+    ];
+
+    const stage3Questions = [
+      { tag: 'Sign structure', statement: 'A particle satisfies v(t)>0 and a(t)<0 for all t>0. Which statement best describes the motion?', options: ['The particle moves forward and speeds up', 'The particle moves backward and slows down', 'The particle moves forward and slows down', 'The particle is at rest'], answer: 2, explanation: 'Positive velocity means forward motion; negative acceleration means the speed is decreasing in that direction.' },
+      { tag: 'Turning ambiguity', statement: 'A particle satisfies v(t0)=0 and a(t0)=0. What can be concluded about the motion at t0?', options: ['It necessarily changes direction', 'It is at a maximum position', 'No conclusion can be made without higher derivatives', 'It remains at rest forever'], answer: 2, explanation: 'With both velocity and acceleration zero at one instant, further local information is needed.' },
+      { tag: 'Distance and return', statement: 'A particle starts at x=0, moves left, then right, and ends again at x=0. Which statement is true?', options: ['Distance = 0', 'Displacement > 0', 'Distance > 0 and displacement = 0', 'Distance = displacement'], answer: 2, explanation: 'Returning to the starting point makes displacement zero, but distance traveled remains positive.' },
+      { tag: 'Constant radius', statement: 'If r(t) is constant but θ(t) varies, what is true?', options: ['The particle is at rest', 'The particle moves along a straight line', 'The particle moves on a circular path', 'The particle has only radial acceleration'], answer: 2, explanation: 'Constant radius with changing angle means circular motion.' },
+      { tag: 'Tangential motion', statement: 'If ṙ=0 but rθ̇ ≠ 0, then:', options: ['The particle has zero velocity', 'The motion is purely radial', 'The motion is purely tangential', 'The acceleration must be zero'], answer: 2, explanation: 'A zero radial component with nonzero transverse component means purely tangential velocity.' },
+      { tag: 'Angular slowing', statement: 'A particle rotates clockwise with decreasing angular speed, so θ̇<0 and θ̈>0. What does the term rθ̈ represent?', options: ['The force keeping circular motion', 'The change in the magnitude of angular velocity', 'The rotation of the unit vectors', 'The radial growth of the path'], answer: 1, explanation: 'rθ̈ is the tangential contribution associated with how the angular velocity changes over time.' },
+      { tag: 'Moving basis', statement: 'Why does polar acceleration include the term 2ṙθ̇?', options: ['Because velocity is squared', 'Because the basis vectors change with time', 'Because gravity acts in two directions', 'Because the radius is constant'], answer: 1, explanation: 'This coupling term appears because the polar basis is moving while r and θ both vary.' },
+      { tag: 'Projectile sign', statement: 'A projectile is launched below the horizontal. Why is v0y negative when upward is taken as positive?', options: ['Because gravity is negative', 'Because the coordinate system defines upward as positive', 'Because the speed decreases', 'Because the motion is accelerated'], answer: 1, explanation: 'The sign follows from the chosen coordinate orientation, not from the existence of gravity alone.' },
+      { tag: 'Velocity vs speed', statement: 'A particle has decreasing speed but increasing velocity. What must be true?', options: ['Velocity is constant', 'The direction of motion changes', 'Acceleration is zero', 'Position is constant'], answer: 1, explanation: 'The scalar speed can decrease while the velocity vector changes by rotating direction.' },
+      { tag: 'Centripetal term', statement: 'Which term in polar acceleration is responsible for maintaining circular motion?', options: ['rθ̈', 'r̈', '-rθ̇²', '2ṙθ̇'], answer: 2, explanation: 'The inward radial term -rθ̇² is the centripetal contribution.' },
+      { tag: 'Momentary rest', statement: 'A particle satisfies v⃗=0 but a⃗ ≠ 0. Which interpretation is correct?', options: ['It is not moving and will remain at rest', 'It is momentarily at rest but about to change motion', 'It has constant velocity', 'It lies outside the model'], answer: 1, explanation: 'Zero velocity at an instant does not imply zero acceleration; the motion can resume immediately after.' }
+    ];
+
+    const quizContainer = document.getElementById('quizContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultBox = document.getElementById('resultBox');
+    const scoreText = document.getElementById('scoreText');
+    const statusLine = document.getElementById('statusLine');
+    const answerReview = document.getElementById('answerReview');
+    const easyPath = document.getElementById('easyPath');
+    const formalPath = document.getElementById('formalPath');
+    const stage2Section = document.getElementById('stage2Section');
+    const stage2Quiz = document.getElementById('stage2Quiz');
+    const submitStage2Btn = document.getElementById('submitStage2Btn');
+    const resetStage2Btn = document.getElementById('resetStage2Btn');
+    const stage2ResultBox = document.getElementById('stage2ResultBox');
+    const stage2ScoreText = document.getElementById('stage2ScoreText');
+    const stage2StatusLine = document.getElementById('stage2StatusLine');
+    const stage2AnswerReview = document.getElementById('stage2AnswerReview');
+    const pdfRewardSection = document.getElementById('pdfRewardSection');
+    const stage3Section = document.getElementById('stage3Section');
+    const stage3Quiz = document.getElementById('stage3Quiz');
+    const submitStage3Btn = document.getElementById('submitStage3Btn');
+    const resetStage3Btn = document.getElementById('resetStage3Btn');
+    const stage3ResultBox = document.getElementById('stage3ResultBox');
+    const stage3ScoreText = document.getElementById('stage3ScoreText');
+    const stage3StatusLine = document.getElementById('stage3StatusLine');
+    const stage3AnswerReview = document.getElementById('stage3AnswerReview');
+    const testOutput = document.getElementById('testOutput');
+
+    function renderQuestionSet(container, questionSet, prefix, titlePrefix) {
+      container.innerHTML = '';
+      questionSet.forEach((q, index) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+        card.innerHTML = `
+          <div class="q-head">
+            <div class="q-num">${titlePrefix} ${index + 1}</div>
+            <div class="q-tag">${q.tag}</div>
+          </div>
+          <div class="statement">${q.statement}</div>
+          <div class="options">
+            ${q.options.map((opt, i) => `
+              <label class="option">
+                <input type="radio" name="${prefix}${index}" value="${i}">
+                ${String.fromCharCode(97 + i)}) ${opt}
+              </label>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function evaluateQuiz(questionSet, prefix) {
+      let score = 0;
+      const review = [];
+      questionSet.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="${prefix}${index}"]:checked`);
+        const chosen = selected ? Number(selected.value) : null;
+        const correct = chosen === q.answer;
+        if (correct) score += 1;
+        review.push({
+          index: index + 1,
+          correct,
+          chosen,
+          right: q.answer,
+          explanation: q.explanation,
+          options: q.options
+        });
+      });
+      return { score, review };
+    }
+
+    function renderReview(review, target) {
+      target.innerHTML = '';
+      review.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `review-item ${item.correct ? 'good' : 'bad'}`;
+        const chosenText = item.chosen === null ? 'No answer selected' : item.options[item.chosen];
+        const rightText = item.options[item.right];
+        div.innerHTML = `
+          <strong>Question ${item.index}</strong>
+          <span class="pill ${item.correct ? 'pill-ok' : 'pill-bad'}">${item.correct ? 'Correct' : 'Review needed'}</span>
+          <div class="small" style="margin-top:6px;">Your answer: ${chosenText}</div>
+          <div class="small">Correct answer: ${rightText}</div>
+          <div style="margin-top:8px;">${item.explanation}</div>
+        `;
+        target.appendChild(div);
+      });
+    }
+
+    function resetRadioGroupStartsWith(prefix) {
+      document.querySelectorAll(`input[name^="${prefix}"]`).forEach(input => {
+        input.checked = false;
+      });
+    }
+
+    function showElement(el) { el.style.display = 'block'; }
+    function hideElement(el) { el.style.display = 'none'; }
+
+    function runSelfChecks() {
+      const checks = [];
+      checks.push(questions.length === 11 ? 'PASS: Stage I has 11 questions.' : `FAIL: Stage I has ${questions.length} questions.`);
+      checks.push(stage2Questions.length === 11 ? 'PASS: Stage II has 11 questions.' : `FAIL: Stage II has ${stage2Questions.length} questions.`);
+      checks.push(stage3Questions.length === 11 ? 'PASS: Stage III has 11 questions.' : `FAIL: Stage III has ${stage3Questions.length} questions.`);
+
+      const scoreNoAnswers = evaluateQuiz(questions, 'q').score;
+      checks.push(scoreNoAnswers === 0 ? 'PASS: Empty Stage I attempt scores 0.' : `FAIL: Empty Stage I attempt scores ${scoreNoAnswers}.`);
+
+      const stage2InitiallyHidden = stage2Section.style.display !== 'block';
+      checks.push(stage2InitiallyHidden ? 'PASS: Stage II starts hidden.' : 'FAIL: Stage II should start hidden.');
+
+      const stage3InitiallyHidden = stage3Section.style.display !== 'block';
+      checks.push(stage3InitiallyHidden ? 'PASS: Stage III starts hidden.' : 'FAIL: Stage III should start hidden.');
+
+      testOutput.textContent = checks.join('\n');
+    }
+
+    submitBtn.addEventListener('click', () => {
+      const { score, review } = evaluateQuiz(questions, 'q');
+      showElement(resultBox);
+      scoreText.textContent = `${score} / 11`;
+      renderReview(review, answerReview);
+      hideElement(easyPath);
+      hideElement(formalPath);
+      showElement(stage2Section);
+      hideElement(stage2ResultBox);
+      hideElement(pdfRewardSection);
+      hideElement(stage3Section);
+      hideElement(stage3ResultBox);
+      stage2AnswerReview.innerHTML = '';
+      stage3AnswerReview.innerHTML = '';
+
+      if (score === 11) {
+        statusLine.textContent = 'Perfect score. Formal route unlocked. Stage II is now open.';
+        showElement(formalPath);
+      } else {
+        statusLine.textContent = 'Adaptive route activated. Slower explanation opened. Stage II is now open.';
+        showElement(easyPath);
+      }
+
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    submitStage2Btn.addEventListener('click', () => {
+      const { score, review } = evaluateQuiz(stage2Questions, 's2q');
+      showElement(stage2ResultBox);
+      stage2ScoreText.textContent = `${score} / 11`;
+      renderReview(review, stage2AnswerReview);
+
+      if (score === 11) {
+        stage2StatusLine.textContent = 'Stage II completed. PDF reward panel unlocked. Stage III is now open.';
+        showElement(pdfRewardSection);
+        showElement(stage3Section);
+      } else {
+        stage2StatusLine.textContent = 'Stage II reviewed. PDF reward stays locked until all 11 are correct.';
+        hideElement(pdfRewardSection);
+        hideElement(stage3Section);
+        hideElement(stage3ResultBox);
+      }
+
+      stage2ResultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    submitStage3Btn.addEventListener('click', () => {
+      const { score, review } = evaluateQuiz(stage3Questions, 's3q');
+      showElement(stage3ResultBox);
+      stage3ScoreText.textContent = `${score} / 11`;
+      renderReview(review, stage3AnswerReview);
+      stage3StatusLine.textContent = score === 11
+        ? 'Stage III completed. Conceptual descent survived.'
+        : 'Stage III completed. The structure remains, but not yet fully understood.';
+      stage3ResultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    resetStage2Btn.addEventListener('click', () => {
+      resetRadioGroupStartsWith('s2q');
+      hideElement(stage2ResultBox);
+      hideElement(pdfRewardSection);
+      hideElement(stage3Section);
+      hideElement(stage3ResultBox);
+      stage2AnswerReview.innerHTML = '';
+      stage3AnswerReview.innerHTML = '';
+      stage2Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    resetStage3Btn.addEventListener('click', () => {
+      resetRadioGroupStartsWith('s3q');
+      hideElement(stage3ResultBox);
+      stage3AnswerReview.innerHTML = '';
+      stage3Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    resetBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[type="radio"]').forEach(input => {
+        input.checked = false;
+      });
+      hideElement(resultBox);
+      hideElement(easyPath);
+      hideElement(formalPath);
+      hideElement(stage2Section);
+      hideElement(stage2ResultBox);
+      hideElement(pdfRewardSection);
+      hideElement(stage3Section);
+      hideElement(stage3ResultBox);
+      answerReview.innerHTML = '';
+      stage2AnswerReview.innerHTML = '';
+      stage3AnswerReview.innerHTML = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    renderQuestionSet(quizContainer, questions, 'q', 'Question');
+    renderQuestionSet(stage2Quiz, stage2Questions, 's2q', 'Stage II — Question');
+    renderQuestionSet(stage3Quiz, stage3Questions, 's3q', 'Stage III — Question');
+    runSelfChecks();
+
+    // =========================
+    // SCORE STORAGE SYSTEM
+    // =========================
+
+    function saveScore(stage, score) {
+      const records = JSON.parse(localStorage.getItem('mechanics_scores') || '[]');
+      const entry = {
+        stage,
+        score,
+        date: new Date().toLocaleString()
+      };
+      records.push(entry);
+      localStorage.setItem('mechanics_scores', JSON.stringify(records));
+      renderScores();
+    }
+
+    function renderScores() {
+      const container = document.getElementById('scoreHistory');
+      if (!container) return;
+      const records = JSON.parse(localStorage.getItem('mechanics_scores') || '[]');
+      container.innerHTML = '';
+      records.forEach((r, i) => {
+        const div = document.createElement('div');
+        div.className = 'review-item';
+        div.innerHTML = `<strong>#${i + 1}</strong> — ${r.stage} | Score: ${r.score}/11<br><span class="small">${r.date}</span>`;
+        container.appendChild(div);
+      });
+    }
+
+    function clearScores() {
+      const pass = prompt('Enter password to delete records:');
+      if (pass === '1234') {
+        localStorage.removeItem('mechanics_scores');
+        renderScores();
+        alert('Records deleted.');
+      } else {
+        alert('Incorrect password.');
+      }
+    }
+
+    // =========================
+    // HOOK INTO EVENTS
+    // =========================
+
+    submitBtn.addEventListener('click', () => {
+      const { score } = evaluateQuiz(questions, 'q');
+      saveScore('Stage I', score);
+    });
+
+    submitStage2Btn.addEventListener('click', () => {
+      const { score } = evaluateQuiz(stage2Questions, 's2q');
+      saveScore('Stage II', score);
+    });
+
+    submitStage3Btn.addEventListener('click', () => {
+      const { score } = evaluateQuiz(stage3Questions, 's3q');
+      saveScore('Stage III', score);
+    });
+
+    // =========================
+    // ADD UI PANEL
+    // =========================
+
+    const scorePanel = document.createElement('section');
+    scorePanel.className = 'wrap panel';
+    scorePanel.innerHTML = `
+      <h2>Score History</h2>
+      <p class="small">All attempts are stored locally in the browser.</p>
+      <div id="scoreHistory"></div>
+      <div style="margin-top:10px;">
+        <button class="secondary" onclick="clearScores()">Delete Records</button>
+      </div>
+    `;
+
+    document.body.appendChild(scorePanel);
+    renderScores();
+  </script>
+</body>
+</html>
